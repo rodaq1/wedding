@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="sk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quattrocento:wght@400;700&family=Montserrat:wght@400;600&display=swap"
+        rel="stylesheet">
+    <title>Svadobná galéria</title>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            background-image: linear-gradient(180deg, #ffffff 0%, #ffffff 30%, #fef3ff 65%, #fde3ff 100%);
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            color: #333333;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .bg-rose-custom {
+            position: fixed;
+            transform: translate(-50%, -50%);
+            width: 110%;
+            height: auto;
+            left: 50%;
+            top: 85%;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: multiply;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            padding: 12px 30px;
+            background-image: linear-gradient(180deg, #fff2fb, #fff5fc);
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(209, 43, 100, 0.04);
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-family: 'Quattrocento', Georgia, serif;
+            font-size: 28px;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            padding: 10px 22px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-primary {
+            background: #ffffff;
+            color: #cd7290;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #fff2fb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #cd7290;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: #fff2fb;
+            transform: translateY(-1px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+            padding: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 392;
+        }
+
+        .photo-card {
+            background: #e4f0fa;
+            border-radius: 20px;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            animation: popIn 0.4s ease-out forwards;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(209, 43, 100, 0.1);
+        }
+
+        .img-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 5;
+        }
+
+        .photo-card:hover .card-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #444;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: #ffffff;
+            color: #cd7290;
+        }
+
+        .photo-author {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 30px 10px 15px 10px;
+            box-sizing: border-box;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(40, 20, 25, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: linear-gradient(180deg, #fff2fb, #fff2fb, #fff5fc, #ffffff, #ffffff);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: popIn 0.3s ease-out;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            color: #cd7290;
+            font-size: 1.4rem;
+        }
+
+        .modal-box p {
+            font-size: 0.95rem;
+            color: #d9d9d9;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #cd7290;
+            border-radius: 36px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .modal-submit {
+            background: #cd7290;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            margin-bottom: 12px;
+            transition: background 0.3s;
+        }
+
+        .modal-submit:hover {
+            background: #b55e7a;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            color: #d9d9d9;
+            border: none;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+
+            .gallery-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding-bottom: 100px;
+            }
+
+            .photo-card {
+                border-radius: 15px;
+            }
+
+            .bg-rose-custom {
+                content: url('/static/assets/kvetyphone.svg');
+                width: 130%;
+                height: auto;
+                bottom: 0;
+                left: 50%;
+                object-fit: contain;
+            }
+        }
+
+        .photo-card img {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card img:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <img src="/static/assets/kvety.svg" alt="Svadobná dekorácia" class="bg-rose-custom">
+
+    <div id="galleryModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>SPRAVOVAŤ FOTKY</h3>
+            <p>Zadaj svoje údaje, aby si mohol(a) spravovať a mazať svoje fotky. Alebo pokračuj iba ako divák.</p>
+            <form id="modalForm">
+                <input type="text" id="modalNameInput" placeholder="Tvoje Meno" required>
+                <input type="email" id="modalEmailInput" placeholder="tvoj@email.com" required>
+                <button type="submit" class="modal-submit">ULOŽIŤ A VSTÚPIŤ</button>
+                <button type="button" class="modal-close-btn" id="justBrowseBtn">Iba si prezerať fotky</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="gallery-header">
+        <h1>Svadobná galéria</h1>
+        <div class="header-actions">
+            <a href="/upload" class="btn btn-primary">Pridať fotku 📷</a>
+            <button class="btn btn-secondary" id="openModalBtn">Spravovať fotky</button>
+        </div>
+    </div>
+
+    <div id="gallery-grid" class="grid"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let currentPhotos = [];
+        const galleryModal = document.getElementById('galleryModal');
+        const modalForm = document.getElementById('modalForm');
+        const modalNameInput = document.getElementById('modalNameInput');
+        const modalEmailInput = document.getElementById('modalEmailInput');
+        const justBrowseBtn = document.getElementById('justBrowseBtn');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const imageViewer = document.getElementById('imageViewer');
+        const fullImage = document.getElementById('fullImage');
+        const closeViewer = document.getElementById('closeViewer');
+
+        // Inicializácia modal okna
+        const savedEmail = localStorage.getItem('wedding_email');
+        const savedName = localStorage.getItem('wedding_name');
+        
+        if (savedEmail && savedName) {
+            galleryModal.style.display = 'none';
+        } else {
+            galleryModal.style.display = 'flex';
+        }
+
+        openModalBtn.addEventListener('click', () => {
+            modalEmailInput.value = localStorage.getItem('wedding_email') || '';
+            modalNameInput.value = localStorage.getItem('wedding_name') || '';
+            galleryModal.style.display = 'flex';
+        });
+
+        modalForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = modalEmailInput.value.trim();
+            const name = modalNameInput.value.trim();
+            if (email && name) {
+                localStorage.setItem('wedding_email', email);
+                localStorage.setItem('wedding_name', name);
+            }
+            galleryModal.style.display = 'none';
+            fetchPhotos(); // Znovu načítať s aktuálnym emailom
+        });
+
+        justBrowseBtn.addEventListener('click', () => {
+            galleryModal.style.display = 'none';
+        });
+
+        // Funkcia na načítanie fotiek
+        function fetchPhotos() {
+            fetch('/api/photos')
+                .then(res => res.json())
+                .then(data => {
+                    if (JSON.stringify(data) !== JSON.stringify(currentPhotos)) {
+                        currentPhotos = data;
+                        renderGallery(data);
+                    }
+                })
+                .catch(err => console.log("Chyba načítania fotiek:", err));
+        }
+
+        // Vykreslenie galérie
+        function renderGallery(data) {
+            const grid = document.getElementById('gallery-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const currentUserEmail = (localStorage.getItem('wedding_email') || '').trim().toLowerCase();
+
+            data.forEach((photo, index) => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.style.animationDelay = `${index * 0.03}s`;
+
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'img-container';
+
+                const img = document.createElement('img');
+                img.src = '/static/uploads/' + photo.filename;
+                img.onclick = () => {
+                    fullImage.src = img.src;
+                    imageViewer.style.display = 'flex';
+                };
+
+                imgContainer.appendChild(img);
+
+                // Akcie (sťahovanie/mazanie)
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'card-actions';
+
+                const downloadBtn = document.createElement('a');
+                downloadBtn.className = 'action-btn';
+                downloadBtn.href = '/static/uploads/' + photo.filename;
+                downloadBtn.download = photo.filename;
+                downloadBtn.innerHTML = '⬇️';
+                actionsDiv.appendChild(downloadBtn);
+
+                if (currentUserEmail && photo.email && photo.email.toLowerCase() === currentUserEmail) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'action-btn';
+                    deleteBtn.innerHTML = '🗑️';
+                    deleteBtn.onclick = () => {
+                        if (confirm('Naozaj chcete vymazať túto fotku?')) {
+                            deletePhoto(photo.filename, currentUserEmail);
+                        }
+                    };
+                    actionsDiv.appendChild(deleteBtn);
+                }
+
+                imgContainer.appendChild(actionsDiv);
+                
+                const authorDiv = document.createElement('div');
+                authorDiv.className = 'photo-author';
+                authorDiv.innerText = photo.name ? '@' + photo.name.toUpperCase().replace(/\s+/g, '') : "@NEZNAMY";
+                imgContainer.appendChild(authorDiv);
+
+                card.appendChild(imgContainer);
+                grid.appendChild(card);
+            });
+        }
+
+        function deletePhoto(filename, email) {
+            fetch('/api/delete-photo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename, email })
+            })
+            .then(res => res.ok ? fetchPhotos() : alert('Nepodarilo sa vymazať fotku.'))
+            .catch(() => alert('Chyba spojenia.'));
+        }
+
+        // Ovládanie Vieweru
+        if (closeViewer) {
+            closeViewer.addEventListener('click', () => imageViewer.style.display = 'none');
+        }
+        imageViewer.addEventListener('click', (e) => {
+            if (e.target.id === 'imageViewer') imageViewer.style.display = 'none';
+        });
+
+        // Spustenie
+        fetchPhotos();
+        setInterval(fetchPhotos, 5000);
+    });
+</script>
+    <div id="imageViewer" class="modal-overlay" style="display: none; background: rgba(0,0,0,0.85);">
+        <div class="modal-box" style="max-width: 90vw; width: auto; padding: 10px;">
+            <img id="fullImage" src="" style="width: 100%; max-height: 80vh; object-fit: contain; border-radius: 10px;">
+            <button id="closeViewer"
+                style="font-family: 'Quattrocento', sans-serif; margin-top: 15px; cursor: pointer; border: none; background: #fff; padding: 8px 20px; border-radius: 20px;">Zavrieť</button>
+        </div>
+    </div>
+</body>
+
+</html>
