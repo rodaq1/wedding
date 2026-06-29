@@ -158,7 +158,6 @@
             position: relative;
         }
 
-        /* Rozšírená podpora pre obrázky aj videá v mriežke */
         img, video {
             width: 100%;
             height: 100%;
@@ -301,6 +300,33 @@
             cursor: pointer;
         }
 
+        /* Navigačné šípky pre Lightbox */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            color: #cd7290;
+            font-size: 2.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 1010;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            user-select: none;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-50%) scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .gallery-header {
                 flex-direction: column;
@@ -344,6 +370,13 @@
                 left: 50%;
                 object-fit: contain;
             }
+
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1.8rem;
+                background: rgba(255, 255, 255, 0.85);
+            }
         }
 
         .photo-card img, .photo-card video {
@@ -355,7 +388,6 @@
             transform: scale(1.05);
         }
 
-        /* Štýl pre načítavanie */
         .btn:disabled {
             background: #e0e0e0 !important;
             color: #999 !important;
@@ -387,23 +419,29 @@
         <h1>Svadobná galéria</h1>
         <div class="header-actions">
             <button class="btn btn-primary" id="triggerUploadBtn">Pridať fotky / video 📷</button>
+            <button class="btn btn-secondary" id="downloadAllBtn">Stiahnuť všetko 💾</button>
             <button class="btn btn-secondary" id="openModalBtn">Spravovať fotky</button>
         </div>
     </div>
 
     <div id="gallery-grid" class="grid"></div>
 
-    <div id="imageViewer" class="modal-overlay" style="display: none; background: rgba(0,0,0,0.85);">
-        <div class="modal-box" style="max-width: 90vw; width: auto; padding: 10px;">
+    <div id="imageViewer" class="modal-overlay" style="display: none; background: rgba(0,0,0,0.9);">
+        <div class="modal-box" style="max-width: 95vw; width: auto; padding: 15px; position: relative; min-width: 300px;">
+            <button id="prevBtn" class="lightbox-nav" style="left: -25px;">‹</button>
             <div id="lightboxContainer"></div>
+            <button id="nextBtn" class="lightbox-nav" style="right: -25px;">›</button>
+            
             <button id="closeViewer"
-                style="font-family: 'Quattrocento', sans-serif; margin-top: 15px; cursor: pointer; border: none; background: #fff; padding: 8px 20px; border-radius: 20px;">Zavrieť</button>
+                style="font-family: 'Quattrocento', sans-serif; margin-top: 15px; cursor: pointer; border: none; background: #fff; padding: 8px 20px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">Zavrieť</button>
         </div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         let currentPhotos = [];
+        let currentLightboxIndex = 0;
+
         const galleryModal = document.getElementById('galleryModal');
         const modalForm = document.getElementById('modalForm');
         const modalNameInput = document.getElementById('modalNameInput');
@@ -412,11 +450,14 @@
         const openModalBtn = document.getElementById('openModalBtn');
         
         const triggerUploadBtn = document.getElementById('triggerUploadBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
         const mediaFileInput = document.getElementById('mediaFileInput');
         
         const imageViewer = document.getElementById('imageViewer');
         const lightboxContainer = document.getElementById('lightboxContainer');
         const closeViewer = document.getElementById('closeViewer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
 
         // Inicializácia modal okna
         const savedEmail = localStorage.getItem('wedding_email');
@@ -450,12 +491,10 @@
             galleryModal.style.display = 'none';
         });
 
-        // Pomocná funkcia na detekciu video súborov podľa prípony
         function checkIsVideo(filename) {
             return /\.(mp4|webm|mov|avi|m4v|3gp)$/i.test(filename);
         }
 
-        // Kliknutie na "Pridať fotky / video" vyvolá natívny výber súborov
         triggerUploadBtn.addEventListener('click', () => {
             const email = localStorage.getItem('wedding_email');
             const name = localStorage.getItem('wedding_name');
@@ -468,7 +507,6 @@
             mediaFileInput.click();
         });
 
-        // Spracovanie vybraných súborov a odoslanie na server
         mediaFileInput.addEventListener('change', (e) => {
             const files = e.target.files;
             if (files.length === 0) return;
@@ -480,16 +518,14 @@
             formData.append('email', email);
             formData.append('name', name);
 
-            // Pridanie všetkých označených súborov do requestu
             for (let i = 0; i < files.length; i++) {
-                formData.append('file', files[i]); // kľúč 'file' prispôsob podľa štruktúry tvojho backendu (napr. 'files' alebo 'photos')
+                formData.append('file', files[i]);
             }
 
-            // Vizuálny stav nahrávania
             triggerUploadBtn.disabled = true;
             triggerUploadBtn.innerText = 'NAHRÁVAM... ⏳';
 
-            fetch('/api/upload', { // Predpokladaný koncový bod tvojho backendu pre upload
+            fetch('/api/upload', {
                 method: 'POST',
                 body: formData
             })
@@ -508,11 +544,42 @@
             .finally(() => {
                 triggerUploadBtn.disabled = false;
                 triggerUploadBtn.innerText = 'Pridať fotky / video 📷';
-                mediaFileInput.value = ''; // reset vstupu
+                mediaFileInput.value = '';
             });
         });
 
-        // Funkcia na načítanie dát zo servera
+        // Funkcia pre hromadné stiahnutie všetkých položiek na pozadí
+        downloadAllBtn.addEventListener('click', () => {
+            if (currentPhotos.length === 0) {
+                alert('V galérii momentálne nie sú žiadne súbory na stiahnutie.');
+                return;
+            }
+
+            if (!confirm(`Chcete stiahnuť všetkých ${currentPhotos.length} súborov do vášho zariadenia?`)) {
+                return;
+            }
+
+            downloadAllBtn.disabled = true;
+            downloadAllBtn.innerText = 'SŤAHUJEM... 💾';
+
+            currentPhotos.forEach((photo, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = '/static/uploads/' + photo.filename;
+                    link.download = photo.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Po dokončení posledného súboru vrátiť text tlačidla späť
+                    if (index === currentPhotos.length - 1) {
+                        downloadAllBtn.disabled = false;
+                        downloadAllBtn.innerText = 'Stiahnuť všetko 💾';
+                    }
+                }, index * 300); // 300ms rozostup zabráni zahlteniu prehliadača
+            });
+        });
+
         function fetchPhotos() {
             fetch('/api/photos')
                 .then(res => res.json())
@@ -525,7 +592,51 @@
                 .catch(err => console.log("Chyba načítania fotiek:", err));
         }
 
-        // Vykreslenie galérie s podporou videa
+        // Otvorenie detailu a spravovanie indexu pre listovanie
+        window.openLightbox = function(index) {
+            if (index < 0) index = currentPhotos.length - 1;
+            if (index >= currentPhotos.length) index = 0;
+
+            currentLightboxIndex = index;
+            const photo = currentPhotos[index];
+            if (!photo) return;
+
+            lightboxContainer.innerHTML = '';
+            const isVideo = checkIsVideo(photo.filename);
+
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.src = '/static/uploads/' + photo.filename;
+                video.controls = true;
+                video.autoplay = true;
+                video.style.width = '100%';
+                video.style.maxHeight = '75vh';
+                video.style.objectFit = 'contain';
+                video.style.borderRadius = '10px';
+                lightboxContainer.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = '/static/uploads/' + photo.filename;
+                img.style.width = '100%';
+                img.style.maxHeight = '75vh';
+                img.style.objectFit = 'contain';
+                img.style.borderRadius = '10px';
+                lightboxContainer.appendChild(img);
+            }
+            imageViewer.style.display = 'flex';
+        }
+
+        // Event Listenery pre šípky listovania
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openLightbox(currentLightboxIndex - 1);
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openLightbox(currentLightboxIndex + 1);
+        });
+
         function renderGallery(data) {
             const grid = document.getElementById('gallery-grid');
             if (!grid) return;
@@ -543,7 +654,6 @@
                 const isVideo = checkIsVideo(photo.filename);
                 let mediaElement;
 
-                // Rozhodnutie či vykresliť img alebo video tag
                 if (isVideo) {
                     mediaElement = document.createElement('video');
                     mediaElement.src = '/static/uploads/' + photo.filename;
@@ -555,34 +665,10 @@
                     mediaElement.src = '/static/uploads/' + photo.filename;
                 }
 
-                // Otvorenie detailu média po kliknutí
-                mediaElement.onclick = () => {
-                    lightboxContainer.innerHTML = '';
-                    if (isVideo) {
-                        const video = document.createElement('video');
-                        video.src = '/static/uploads/' + photo.filename;
-                        video.controls = true;
-                        video.autoplay = true;
-                        video.style.width = '100%';
-                        video.style.maxHeight = '80vh';
-                        video.style.objectFit = 'contain';
-                        video.style.borderRadius = '10px';
-                        lightboxContainer.appendChild(video);
-                    } else {
-                        const img = document.createElement('img');
-                        img.src = '/static/uploads/' + photo.filename;
-                        img.style.width = '100%';
-                        img.style.maxHeight = '80vh';
-                        img.style.objectFit = 'contain';
-                        img.style.borderRadius = '10px';
-                        lightboxContainer.appendChild(img);
-                    }
-                    imageViewer.style.display = 'flex';
-                };
+                mediaElement.onclick = () => openLightbox(index);
 
                 imgContainer.appendChild(mediaElement);
 
-                // Akcie (sťahovanie/mazanie)
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'card-actions';
 
@@ -597,7 +683,8 @@
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'action-btn';
                     deleteBtn.innerHTML = '🗑️';
-                    deleteBtn.onclick = () => {
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
                         if (confirm('Naozaj chcete vymazať toto médium?')) {
                             deletePhoto(photo.filename, currentUserEmail);
                         }
@@ -607,10 +694,8 @@
 
                 imgContainer.appendChild(actionsDiv);
                 
-                // Meno autora + rozlíšenie videa ikonkou
                 const authorDiv = document.createElement('div');
                 authorDiv.className = 'photo-author';
-                
                 const authorName = photo.name ? '@' + photo.name.toUpperCase().replace(/\s+/g, '') : "@NEZNAMY";
                 authorDiv.innerText = authorName;
                 
@@ -636,21 +721,29 @@
             .catch(() => alert('Chyba spojenia.'));
         }
 
-        // Ovládanie Vieweru (Lightboxu)
-        if (closeViewer) {
-            closeViewer.addEventListener('click', () => {
-                lightboxContainer.innerHTML = ''; // Zastaví prehrávanie videa pri zatvorení
-                imageViewer.style.display = 'none';
-            });
+        // Zatváranie modalov a čistenie elementov
+        function closeLightboxView() {
+            lightboxContainer.innerHTML = '';
+            imageViewer.style.display = 'none';
         }
+
+        if (closeViewer) {
+            closeViewer.addEventListener('click', closeLightboxView);
+        }
+        
         imageViewer.addEventListener('click', (e) => {
-            if (e.target.id === 'imageViewer') {
-                lightboxContainer.innerHTML = '';
-                imageViewer.style.display = 'none';
+            if (e.target.id === 'imageViewer') closeLightboxView();
+        });
+
+        // Podpora ovládania klávesnicou (Šípky + Escape)
+        document.addEventListener('keydown', (e) => {
+            if (imageViewer.style.display === 'flex') {
+                if (e.key === 'ArrowLeft') openLightbox(currentLightboxIndex - 1);
+                if (e.key === 'ArrowRight') openLightbox(currentLightboxIndex + 1);
+                if (e.key === 'Escape') closeLightboxView();
             }
         });
 
-        // Automatická synchronizácia každých 5 sekúnd
         fetchPhotos();
         setInterval(fetchPhotos, 5000);
     });
