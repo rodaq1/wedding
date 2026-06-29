@@ -38,39 +38,45 @@ def get_photos():
     conn.close()
     return jsonify(photos)
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload():
-    if request.method == 'POST':
-        if 'photo' not in request.files:
-            return 'No file part', 400
-        
-        file = request.files['photo']
-        email = request.form.get('email', '').strip()
-        name = request.form.get('name', '').strip()
+# NOVÁ ROUTA: Spracovanie hromadného nahrávania fotiek a videí cez AJAX
+@app.route('/api/upload', methods=['POST'])
+def api_upload():
+    if 'file' not in request.files:
+        return 'Žiadny súbor nebol odoslaný', 400
+    
+    # Získanie zoznamu všetkých nahraných súborov
+    files = request.files.getlist('file')
+    email = request.form.get('email', '').strip()
+    name = request.form.get('name', '').strip()
 
-        if file.filename == '':
-            return 'No selected file', 400
-        if not email:
-            return 'Email is required', 400
-        if not name:
-            return 'Name is required', 400
+    if not files or files[0].filename == '':
+        return 'Neboli vybrané žiadne súbory', 400
+    if not email:
+        return 'Email je povinný', 400
+    if not name:
+        return 'Meno je povinné', 400
+        
+    conn = sqlite3.connect('photos.db')
+    now = datetime.now()
+    timestamp_str = now.strftime('%Y%m%d%H%M%S')
+    db_timestamp = now.strftime('%Y-%m-%d %H:%M:%S')
+
+    # Cyklus, ktorý spracuje každý súbor rad za radom
+    for idx, file in enumerate(files):
+        if file and file.filename != '':
+            # Pridanie indexu (idx) zabezpečí, že sa súbory neprepíšu, ak sa nahrajú v tej istej sekunde
+            filename = f"{timestamp_str}_{idx}_{file.filename}"
             
-        if file:
-            now = datetime.now()
-            timestamp_str = now.strftime('%Y%m%d%H%M%S')
-            filename = f"{timestamp_str}_{file.filename}"
-            
+            # Flask a databáza neriešia, či ide o video alebo fotku – uložia sa rovnako
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             
-            conn = sqlite3.connect('photos.db')
             conn.execute('INSERT INTO photos (filename, timestamp, email, name) VALUES (?, ?, ?, ?)', 
-                         (filename, now.strftime('%Y-%m-%d %H:%M:%S'), email, name))
-            conn.commit()
-            conn.close()
-            
-            return 'Success', 200
-            
-    return render_template('upload.html')
+                         (filename, db_timestamp, email, name))
+    
+    conn.commit()
+    conn.close()
+    
+    return 'Success', 200
 
 @app.route('/api/delete-photo', methods=['POST'])
 def delete_photo():
