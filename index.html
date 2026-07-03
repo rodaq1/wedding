@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Svadobná galéria Lenky a Benyho</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- 🌸 HEADER -->
+    <header class="header">
+        <h1>Svadobná galéria</h1>
+        <p>Lenka & Beny</p>
+    </header>
+
+    <!-- 🌸 WELCOME POPUP (shown once per device) -->
+    <div id="welcomeModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <h2>Ahoj! 👋</h2>
+            <p>
+                Vitaj v Svadobnej galérií Lenky a Benyho!<br><br>
+                Pridávanie fotiek a videí už bolo uzavreté, a teraz si môžeš hocikedy
+                pozrieť krásne spomienky z ich svadobného dňa.
+            </p>
+
+            <button id="welcomeBtn" class="modal-button">
+                Rozumiem
+            </button>
+        </div>
+    </div>
+
+    <!-- 🌸 MAIN GALLERY -->
+    <main>
+
+        <div id="gallery" class="gallery-grid">
+            <!-- JS will inject images/videos here -->
+        </div>
+
+    </main>
+
+    <!-- 🌸 LIGHTBOX -->
+    <div id="lightbox" class="lightbox" style="display:none;">
+        <span id="closeLightbox" class="close">&times;</span>
+
+        <div class="lightbox-content">
+            <!-- JS injects image/video -->
+        </div>
+
+        <button id="prevBtn" class="nav-btn">‹</button>
+        <button id="nextBtn" class="nav-btn">›</button>
+    </div>
+
+    <!-- 🌸 FOOTER -->
+    <footer>
+        <p>© 2026 Lenka & Beny</p>
+    </footer>
+
+    <!-- 🌸 SCRIPTS -->
+    <script src="script.js"></script>
+
+</body>
+</html>
